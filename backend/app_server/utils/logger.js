@@ -11,7 +11,7 @@ const logger = createLogger({
         // Writes all warns, and errors to error.log file
         new transports.File({
             filename: path.join(__dirname, 'logs', 'error.log'),
-            level: 'warn',                                                          // Push wanr and error logs to error file
+            level: 'warn',                                                          // Push warn and error logs to error file
         }),
         // Writes all info logs to info.log file
         new transports.File({

@@ -50,6 +50,8 @@ const userRepo = {
         } catch(err) {
             console.error(`REPO Could Not Insert New User Row: ${err}`)
             logger.error(`REPO Could Not Insert New User Row: ${err}`);
+
+            throw err;
         }
     },
 
@@ -81,6 +83,8 @@ const userRepo = {
         } catch (err) {
             console.error(`REPO Failed to set user body details : ${err}`);
             logger.error(`REPO Failed to set user body details : ${err}`);
+
+            throw err;
         }
     },
 
@@ -107,7 +111,7 @@ const userRepo = {
             console.error(`REPO Could not retrieve user by id: ${err}`);
             logger.error(`REPO Could not retrieve user by id: ${err}`);
 
-        
+            throw err;
         }
     },
 
@@ -189,6 +193,8 @@ const userRepo = {
         } catch (err) {
             console.error(`REPO Failed to update user using ${query} as update query : ${err}`);
             logger.error(`REPO Failed to update user using ${query} as update query: ${err}`);
+
+            throw err;
         }
     },
 
@@ -213,6 +219,8 @@ const userRepo = {
         } catch (err) {
             console.error(`REPO Failed to delete user from users: ${err}`);
             logger.error(`REPO Failed to delete user from users: ${err}`);
+
+            throw err;
         }
     }, 
 }
