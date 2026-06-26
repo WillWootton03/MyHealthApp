@@ -85,8 +85,6 @@ const userController = {
         
         const { token } = req.body;
 
-        console.log(token, req.body);
-
         if(!token) { return res.status(400).json({ succes: false, message: 'Invalid or Missing Token'});}
 
         try {
@@ -196,19 +194,15 @@ const userController = {
         }
     },
 
-    setBodyDetails : async({ req, res, next }) => {
+    setBodyDetails : async( req, res, next ) => {
         logger.info(`Controller attempting to update user body details`);
         try {
             const user_id = req.user.user_id;
             const { height, weight, age, gender, activity_level } = req.body;
-            logger.debug(`CALORIE_TRACKER CONTROLLER {HEIGHT: ${height}, WEIGHT: ${weight}, AGE: ${age}, GENDER: ${gender}, ACTIVITY_LEVEL: ${activity_level}`);
+            console.log(gender === 'male');
+            logger.debug(`USER_TRACKER CONTROLLER {HEIGHT: ${height}, WEIGHT: ${weight}, AGE: ${age}, GENDER: ${gender}, ACTIVITY_LEVEL: ${activity_level}`);
 
-            if (gender !== 'male' && gender !== 'female') {
-                logger.error(`Incorrect gender selected`);
-                return next(new Error('Incorrect gender selected'));
-            }
-
-            const result = await calorieTrackerService.setBodyDetails({ user_id, height, weight, age, gender, activity_level});
+            const result = await userService.setBodyDetails({ user_id, height, weight, age, gender, activity_level});
 
             res
                 .status(200)

@@ -1,5 +1,4 @@
 import { ChevronDown, Heart, User, Settings, LogOut, ShieldCheck } from "lucide-react";
-import { Link, useNavigate } from "react-router";
 import { useUser } from "./context/UsersContext";
 import { useEffect, useRef, useState } from "react";
 

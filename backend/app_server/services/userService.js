@@ -24,6 +24,9 @@ const userService = {
         logger.debug(`USER SERVICE {Name: ${name}, Email: ${email}, User_id: ${user_id}, Password_hash: ${password_hash}}`);
         logger.info(`Create User on User Service Called: ${user_id}`);
 
+        // Give token init undefined so if user isnt successfully created no token is generarted
+        let token = undefined;
+
         const res = await userRepo.createUser({
             user_id,
             name,
@@ -33,6 +36,17 @@ const userService = {
 
         if(res) {
             try {
+                // Set auth token for user when creating new account
+                token = jwt.sign(
+                    {
+                        user_id: user_id
+                    },
+                    process.env.JWT_SECRET,
+                    {
+                        expiresIn: '7d',
+                    }
+                );
+
                 const mail = await transporter.sendMail({
                     from: process.env.APP_MAILER,
                     to: res.email,
@@ -47,7 +61,9 @@ const userService = {
             }
         }
 
-        return { res };
+        
+
+        return { res, token };
     },
 
     emailLogin : async({ email, password }) => {
@@ -168,6 +184,8 @@ const userService = {
     setBodyDetails : async({ user_id, height, weight, age, gender, activity_level }) => {
         // verifies all required fields are not null or undefined before attempting to calculate tdee
         if (user_id && height && weight && age && gender && activity_level) {
+
+            console.log(height, weight, age, gender, activity_level);
             let BMR = (10 * weight) + (6.25 * height) - (5 * age);
 
             if (gender === 'male') {
@@ -194,14 +212,14 @@ const userService = {
                     break;
             }
             
-            const res = await calorieTrackerRepo.setBodyDetails({ 
+            const res = await userRepo.setBodyDetails({ 
                 user_id, 
                 height,
                 weight, 
                 age, 
                 gender, 
                 activity_level, 
-                tdee: BMR
+                tdee: Math.floor(BMR)
             });
              
         } else {

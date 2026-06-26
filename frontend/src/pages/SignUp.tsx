@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, Heart } from 'lucide-react';
-import { useNavigate } from "react-router";
+import { Form, useNavigate } from "react-router";
+import BodyDetails from "../components/BodyDetails";
 
 import axios from 'axios';
+import FormField from "../components/FormField";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,6 +16,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
 
   
   const navigate = useNavigate();
@@ -30,6 +35,7 @@ export default function Login() {
         return;
       }
 
+      // Form error if passwords are not the same
       if (password !== verifyPassword) {
         setFormError('Passwords do not match');
         return;
@@ -40,7 +46,7 @@ export default function Login() {
       try {
         setLoading(true);
         console.log('Attempting Sign Up');
-        await axios.post(
+        const res = await axios.post(
           `${import.meta.env.VITE_API_BASE_ROUTE}/users`, 
           {
             email: email,
@@ -49,10 +55,16 @@ export default function Login() {
           }
         );
 
-        console.log(`Frontend rerouting user to login after successful Sign Up`);
-        // Redirect to Dashboard
-        navigate('/login');
-      } catch(err : any) {
+        // res.data returns success and data, so token is stored in data.data
+        const token = res.data.data.token;
+
+        // Save token in browser storage
+        localStorage.setItem('token', token);
+
+        setLoading(false);
+        setIsSignedIn(true);
+        
+      } catch (err : any) {
         console.error(`Frontend Could Not Process Login : ${err.response?.data?.message}`);
         setLoading(false);
       }
@@ -63,7 +75,7 @@ export default function Login() {
           className="min-h-screen w-full flex items-center justify-center relative overflow-hidden page-bg-light"
       >
         {/* Card */}
-        <div className="relative z-10 w-full max-w-sm mx-4 bg-white/80 backdrop-blur-md rounded-2xl border border-white/60 shadow[0_8px_40px_rgba(0,0,0,0.08)
+        <div className="relative z-10 w-full max-w-sm mx-4 bg-white/80 backdrop-blur-md rounded-2xl border border-white/60 shadow[0_8px_40px_rgba(0,0,0,0.08)]
                         px-8 py-10 drop-shadow-2xl">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
@@ -79,85 +91,50 @@ export default function Login() {
             <p className="text-black/45 text-sm mt-1">Sign Up to start your journey</p>
           </div>
 
+          <div className="overflow-hidden">
+
+            <div
+              className={
+                `flex w-[200%] transition-transform duration-500 ease-in-out ${isSignedIn ? "-translate-x-1/2" : "translate-x-0"}`
+              }
+            >
+
           {/* Form To Sign Up */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="w-1/2">
 
-            {/* Name */}
-            <div>
-                <label 
-                    htmlFor="name"
-                    className="block text-sm font-medium text-black/55 mb-1 tracking-widest uppercase"
-                >
-                    Full Name
-                </label>
-                <input 
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setFocusedField('name')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="John Doe"
-                    required
-                    className="w-full px-4 py-3 text-sm bg-gray-100 text-black placeholder-black/25 rounded-lg outline-none transition-all duration-150"
-                    style={{
-                        border: focusedField === 'name' ? "1.5px solid #32a5f1" : "1.5px solid transparent",
-                        boxShadow: focusedField === 'name' ? "0 0 0 3px rgba(124, 77, 186, 0.12" : "none",
-                    }}
+              <form onSubmit={handleSubmit} className="space-y-4">
+
+                {/* Name */}
+                <FormField 
+                  id="name"
+                  label="Full Name"
+                  type="text"
+                  value={name}
+                  onChange={setName}
+                  placeholder="John Doe"
+                  required
                 />
-            </div>
 
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-medium text-black/55 mb-1.5 tracking-wide uppercase"
-              >
-                Email
-              </label>
-              <input
+                {/* Email */}
+                <FormField
                 id='email'
                 type="email"
+                label="Email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setFocusedField('email')}
-                onBlur={() => setFocusedField(null)}
+                onChange={setEmail}
                 placeholder="example@example.com" 
                 required
-                className="w-full px-4 py-3 text-sm bg-gray-100 text-black placeholder-black/25 rounded-lg outline-none transition-all duration-150" 
-                style={{
-                  border: focusedField === 'email' ? "1.5px solid #32a5f1" : "1.5px solid transparent",
-                  boxShadow: focusedField === 'email' ? "0 0 0 3px rgba(124, 77, 186, 0.12" : "none",
-                }}
-              />
-            </div> 
+                />
 
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor="password"
-                  className="block text-xs font-medium text-black/55 tracking-wide uppercase hover:pointer-none"
-                >
-                  Password
-                </label>
-              </div>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField('password')}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="••••••••"
-                  required
-                  className="w-full px-4 py-4 pr-11 text-sm bg-gray-50 text-black placeholder-black/25 rounded-lg outline-none transition-all duration-150"
-                  style={{
-                    border: "1.5px solid",
-                    borderColor: focusedField === 'password' ? "32a5f1" : "transparent",
-                    boxShadow: focusedField === 'email' ? "0 0 0 3px rgba(124, 77, 186, 0.12" : "none",
-                  }}
+                {/* Password */}
+                <FormField
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    label="Password"
+                    value={password}
+                    onChange={setPassword}
+                    placeholder="••••••••"
+                    required
                 />
                 <button
                   type="button"
@@ -167,35 +144,16 @@ export default function Login() {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
 
-            {/* Verify Password */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor="verifyPassword"
-                  className="block text-xs font-medium text-black/55 tracking-wide uppercase hover:pointer-none"
-                >
-                  Verify Password
-                </label>
-              </div>
-              <div className="relative">
-                <input
-                  id="verifyPassword"
-                  type={showPassword ? "text" : "password"}
-                  value={verifyPassword}
-                  onChange={(e) => setVerifyPassword(e.target.value)}
-                  onFocus={() => setFocusedField('verifyPassword')}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="••••••••"
-                  required
-                  className="w-full px-4 py-4 pr-11 text-sm bg-gray-50 text-black placeholder-black/25 rounded-lg outline-none transition-all duration-150"
-                  style={{
-                    border: "1.5px solid",
-                    borderColor: verifyPassword.length > 0 && verifyPassword !== password ? 'red' : focusedField === 'verifyPassword' ? '#32a5f1' : 'transparent',
-                    boxShadow: focusedField === 'verifyPassword' ? "0 0 0 3px rgba(124, 77, 186, 0.12" : "none",
-                  }}
+                {/* Verify Password */}
+                <FormField
+                    id="verifyPassword"
+                    type={showPassword ? "text" : "password"}
+                    label="Verify Password"
+                    value={verifyPassword}
+                    onChange={setVerifyPassword}
+                    placeholder="••••••••"
+                    required
                 />
                 <button
                   type="button"
@@ -205,39 +163,47 @@ export default function Login() {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
 
-            {/* Form Errors */}
-            <div className="relative flex flex-col items-center">
-              {formError && (
-                <div className="absoulte bottom-full mb-2 px-3 py-2 text-sm text-white bg-red-500/80 rounded-md shadow-md whitespace-nowrap transition-all duration-150">
-                  {formError}
-                </div>
-              )}
+                  {/* Form Errors */}
+                  {formError && (
+                    <div className="relative flex flex-col items-center">
+                      <div className="absoulte bottom-full mb-2 px-3 py-2 text-sm text-white bg-red-500/80 rounded-md shadow-md whitespace-nowrap transition-all duration-150">
+                        {formError}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-1 py-3.5 bg-color-primary text-white text-sm font-medium rounded-lg hover-bg-color-primary active:scale-[0.99] transition-all duration-150
-                          disabled:opacity-60 flex items-center justify-center gap-2 hover:cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth='3' />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    Signing Up...
-                  </>
-                ) : (
-                  "Sign Up"
-                )}
-              </button>
-            </div>
-          </form>
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full mt-1 py-3.5 bg-color-primary text-white text-sm font-medium rounded-lg hover-bg-color-primary active:scale-[0.99] transition-all duration-150
+                              disabled:opacity-60 flex items-center justify-center gap-2 hover:cursor-pointer"
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth='3' />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        Signing Up...
+                      </>
+                    ) : (
+                      "Sign Up"
+                    )}
+                  </button>
+              </form>
+          </div>
 
+          <div className="w-1/2">
+            <BodyDetails />
+          </div>
+
+        </div>
+      </div>
+
+          
+          {!isSignedIn && (
           <p className="mt-6 text-center text-sm text-black/40">
               Already have an account?{" "}
             <button
@@ -248,6 +214,7 @@ export default function Login() {
               Sign In
             </button>
           </p>
+          )}
         </div>
       </div>
   );

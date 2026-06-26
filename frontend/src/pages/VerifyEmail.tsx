@@ -5,14 +5,19 @@ import { useNavigate } from "react-router";
 export default function VerifyEmail() {
     const { verifyEmail } = useUser();
 
+    const navigate = useNavigate();
+
     useEffect(() => {
-        verifyEmail();
+        const verify = async () => {
+           await verifyEmail();
+            navigate('/app')
+        }
+
+        verify();
     }, []);
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden page-bg-light">
-            <p>Verified Email</p>
-            <a href="/app">Head to Dashboard</a>
         </div>
 
     )
